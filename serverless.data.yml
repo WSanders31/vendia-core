@@ -1,0 +1,54 @@
+service: sanders-account-service-data
+
+variablesResolutionMode: 20210326
+
+provider:
+  name: aws
+  stage: ${file(./serverless.vars.js):stage}
+  region: ${file(./serverless.vars.js):region}
+  deploymentBucket: 
+    name: ${aws:accountId}-${file(./serverless.vars.js):deploymentBucket}
+
+custom:
+  dynamodb: ${file(./serverless.vars.js):dynamodb}
+
+resources:
+  Resources:
+    DynamoDB:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:custom.dynamodb}
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: pk
+            AttributeType: S
+          - AttributeName: sk
+            AttributeType: S
+          - AttributeName: gsi1pk
+            AttributeType: S
+          - AttributeName: gsi1sk
+            AttributeType: S
+        KeySchema:
+          - AttributeName: pk
+            KeyType: HASH
+          - AttributeName: sk
+            KeyType: RANGE
+        GlobalSecondaryIndexes:
+          - IndexName: gsi1
+            KeySchema:
+              - AttributeName: gsi1pk
+                KeyType: HASH
+              - AttributeName: gsi1sk
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+  Outputs:
+    AccountDynamoDB:
+      Value:
+        Ref: DynamoDB
+      Export:
+        Name: ${file(./serverless.vars.js):dynamodb}
+    AccountDynamoDBArn:
+      Value: !GetAtt DynamoDB.Arn
+      Export:
+        Name: ${file(./serverless.vars.js):dynamodbArnExport}

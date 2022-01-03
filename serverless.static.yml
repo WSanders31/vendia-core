@@ -1,0 +1,15 @@
+service: sanders-account-service-static
+
+variablesResolutionMode: 20210326
+
+provider:
+  name: aws
+  stage: ${file(./serverless.vars.js):stage}
+  region: ${file(./serverless.vars.js):region}
+
+resources:
+  Resources:
+    DeploymentBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${aws:accountId}-${file(./serverless.vars.js):deploymentBucket}

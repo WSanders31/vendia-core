@@ -1,0 +1,112 @@
+service: sanders-account-service-api
+
+variablesResolutionMode: 20210326
+
+custom:
+  dynamodb: ${file(./serverless.vars.js):dynamodb}
+  dynamodbArnExport: ${file(./serverless.vars.js):dynamodbArnExport}
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+  stage: ${file(./serverless.vars.js):stage}
+  region: ${file(./serverless.vars.js):region}
+  versionFunctions: false
+  logRetentionInDays: 7
+  deploymentBucket: 
+    name: ${aws:accountId}-${file(./serverless.vars.js):deploymentBucket}
+  resourcePolicy:
+    - Effect: Allow
+      Principal: '*'
+      Action: execute-api:Invoke
+      Resource:
+        - execute-api:/*/*/*    
+
+  # Lambda Runtime/NodeJS environment variables
+  environment:
+    DYNAMODB: ${self:custom.dynamodb}
+    STAGE: ${self:provider.stage}
+    REGION: ${self:provider.region}
+    NODE_OPTIONS: '--enable-source-maps'
+    DEBUG: typedorm:*
+
+  iam:
+    role:
+      statements:
+        - Effect: 'Allow'
+          Action:
+            - 'dynamodb:*'
+          Resource: !ImportValue ${self:custom.dynamodbArnExport}
+        - Effect: 'Allow'
+          Action:
+            - 'dynamodb:*'
+          Resource:
+            !Join [
+              '/',
+              [!ImportValue '${self:custom.dynamodbArnExport}', 'index/*'],
+            ]
+
+package:
+  individually: true
+  patterns:
+    - '!./serverless/**'
+    - '!./src/**'
+    - '!./test/**'
+    - '!./utility/**'
+    - '!./.eslintrc.js'
+    - '!./.gitignore'
+    - '!./.github/**'
+    - '!./.prettierrc.js'
+    - '!./jest.config.js'
+    - '!./package-lock.json'
+    - '!./package.json'
+    - '!./README.md'
+    - '!./serverless.*.*'
+    - '!./serverless.yml'
+    - '!./tsconfig.eslint.json'
+    - '!./tsconfig.json'
+    - '!./dist/tests/**'
+    - './dist/src/**'
+
+# Lambda functions
+functions:
+  getAccountBalance:
+    handler: ./dist/src/handler.getAccountBalance
+    events:
+      - http:
+          path: /accounts/{accountType}
+          method: GET
+          authorizer:
+            type: aws_iam
+  transferAccountBalance:
+    handler: ./dist/src/handler.transferAccountBalance
+    events:
+      - http:
+          path: /accounts/{accountType}
+          method: POST
+          authorizer:
+            type: aws_iam            
+  listAccounts:
+    handler: ./dist/src/handler.getAccounts
+    events:
+      - http:
+          path: /accounts
+          method: GET
+          authorizer:
+            type: aws_iam
+  createAccount:
+    handler: ./dist/src/handler.createAccount
+    events:
+      - http:
+          path: /accounts
+          method: POST
+          authorizer:
+            type: aws_iam
+  deleteAccount:
+    handler: ./dist/src/handler.deleteAccount
+    events:
+      - http:
+          path: /accounts/{accountType}
+          method: DELETE
+          authorizer:
+            type: aws_iam                                    
