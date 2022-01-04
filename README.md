@@ -18,6 +18,12 @@ You can, of course, also deploy individual stacks by themselves if necessary.
 
 ## API Documentation
 
+```
+api_id: 9h65exm6ld
+region: us-east-2
+stage dev
+```
+
 GET `https://{{api_id}}.execute-api.{{region}}.amazonaws.com/{{stage}}/accounts`
 
 GET `https://{{api_id}}.execute-api.{{region}}.amazonaws.com/{{stage}}/accounts/{accountType}`
