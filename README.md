@@ -1,14 +1,9 @@
-# vendia-core
+# Vendia Core Engineer Assignment - Banking (Account) API
 
-Vendia Core Engineer Assignment - Banking (Account) API
+## Infrastructure
 
-{
-    "transferToAwsAccountId": "216174902901",
-    "transferToAccountType": "checking",
-    "transferAmount": 1300
-}
+## Project Structure
 
-{
-    "accountType": "checking",
-    "balance": 1000
-}
+## API Documentation
+
+## Data Modeling

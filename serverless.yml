@@ -13,14 +13,16 @@ provider:
   region: ${file(./serverless.vars.js):region}
   versionFunctions: false
   logRetentionInDays: 7
-  deploymentBucket: 
+  deploymentBucket:
     name: ${aws:accountId}-${file(./serverless.vars.js):deploymentBucket}
   resourcePolicy:
     - Effect: Allow
       Principal: '*'
       Action: execute-api:Invoke
       Resource:
-        - execute-api:/*/*/*    
+        - execute-api:/*/*/*
+  logs:
+    restApi: true
 
   # Lambda Runtime/NodeJS environment variables
   environment:
@@ -86,7 +88,7 @@ functions:
           path: /accounts/{accountType}
           method: POST
           authorizer:
-            type: aws_iam            
+            type: aws_iam
   listAccounts:
     handler: ./dist/src/handler.getAccounts
     events:
@@ -110,4 +112,4 @@ functions:
           path: /accounts/{accountType}
           method: DELETE
           authorizer:
-            type: aws_iam                                    
+            type: aws_iam

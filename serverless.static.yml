@@ -13,3 +13,10 @@ resources:
       Type: AWS::S3::Bucket
       Properties:
         BucketName: ${aws:accountId}-${file(./serverless.vars.js):deploymentBucket}
+  
+  Outputs:
+    DeploymentBucket:
+      Value:
+        Ref: DeploymentBucket
+      Export:
+        Name: ${file(./serverless.vars.js):deploymentBucket}      
