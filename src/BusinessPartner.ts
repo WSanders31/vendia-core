@@ -6,22 +6,22 @@ export interface RequiredAttributes {
 }
 
 @Entity({
-  name: RootAccount.ENTITY_NAME,
+  name: BusinessPartner.ENTITY_NAME,
   primaryKey: {
     partitionKey: `AWS_ACCOUNT_ID#{{awsAccountId}}`,
-    sortKey: `__EN#${RootAccount.ENTITY_NAME}`,
+    sortKey: `__EN#${BusinessPartner.ENTITY_NAME}`,
   },
 })
-export default class RootAccount {
+export default class BusinessPartner {
   public constructor(
-    requiredAttributes: RequiredAttributes & Partial<RootAccount>
+    requiredAttributes: RequiredAttributes & Partial<BusinessPartner>
   ) {
+    this.accountCount = 0;
     Object.assign(this, requiredAttributes);
     this.awsAccountId = requiredAttributes.awsAccountId;
-    this.accountCount = 0;
   }
 
-  public static ENTITY_NAME = 'RootAccount';
+  public static ENTITY_NAME = 'BusinessPartner';
 
   @Attribute()
   public awsAccountId: string;

@@ -1,24 +1,29 @@
+import AWS from 'aws-sdk';
 import 'reflect-metadata';
 import AccountRepository from './AccountRepository';
 import AccountService from './AccountService';
 import { Connection, createConnection, getConnection } from '@typedorm/core';
 import dynamodbTable from './DynamoDB';
 import Account from './Account';
-import RootAccount from './RootAccount';
+import BusinessPartner from './BusinessPartner';
 
 /**
  * All required modules to run the application. When the handler imports the service layer from this file,
- * the rest of the required modules will be bootstrapped at runtime.
+ *the rest of the required modules will be bootstrapped at runtime.
  */
 
-console.log('Initializing.');
+console.log('Initializing Account Service.');
 
+// This is set to be able to utilize ts-node at the command line, reducing deploy cycles and allow code to be tested locally.
+AWS.config.update({
+  region: process.env.REGION,
+});
 // TypedORM requires creating a connection and establishing an entity manager.
 let connection: Connection;
 try {
   connection = createConnection({
     table: dynamodbTable, // Table definition
-    entities: [RootAccount, Account], // Must register data models at runtime. Glob pattern not working.
+    entities: [BusinessPartner, Account], // Must register data models at runtime. Glob pattern not working.
   });
 } catch (e) {
   console.log(
@@ -29,10 +34,13 @@ try {
 }
 
 const entityManager = connection.entityManager;
-const scanManager = connection.scanManager;
 const transactionManager = connection.transactionManger;
 
-const accountRepository = new AccountRepository(connection, entityManager, scanManager, transactionManager);
+const accountRepository = new AccountRepository(
+  connection,
+  entityManager,
+  transactionManager
+);
 const accountService = new AccountService(accountRepository);
 
 export { connection, entityManager, accountService, accountRepository };

@@ -4,7 +4,6 @@ import { Attribute, Entity } from '@typedorm/common';
 export interface RequiredAttributes {
   awsAccountId: string;
   accountType: string;
-  balance: number;
 }
 
 @Entity({
@@ -21,7 +20,7 @@ export default class Account {
     Object.assign(this, requiredAttributes);
     this.awsAccountId = requiredAttributes.awsAccountId;
     this.accountType = requiredAttributes.accountType;
-    this.balance = requiredAttributes.balance;
+    this.balance = requiredAttributes.balance || 0;
   }
 
   public static ENTITY_NAME = 'Account';

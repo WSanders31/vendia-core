@@ -45,15 +45,24 @@ export async function getAccounts(
   console.log('getAccounts recieved event', event);
 
   const awsAccountId: string | null = event.requestContext?.identity?.accountId;
+  const limit: number | undefined = event.queryStringParameters?.limit
+    ? parseInt(event.queryStringParameters.limit)
+    : undefined;
+  const cursor: string | undefined = event.queryStringParameters?.cursor;
 
   if (awsAccountId) {
     const accounts: EntityList<Account> = await accountService.getAccounts(
-      awsAccountId
+      awsAccountId,
+      limit,
+      cursor
     );
 
     return {
       statusCode: 200,
-      body: JSON.stringify(accounts),
+      body: JSON.stringify({
+        ...accounts,
+        ...(accounts.cursor && { cursor: encodeURIComponent(accounts.cursor) }),
+      }),
     };
   }
 
@@ -74,8 +83,11 @@ export async function createAccount(
       awsAccountId: event.requestContext?.identity?.accountId,
     } as Account;
     const isAdmin = event.requestContext.accountId === request.awsAccountId;
-    
-    const account: Account = await accountService.createAccount(request, isAdmin);
+
+    const account: Account | undefined = await accountService.createAccount(
+      request,
+      isAdmin
+    );
 
     return {
       statusCode: 201,
