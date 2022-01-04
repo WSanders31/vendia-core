@@ -113,3 +113,11 @@ functions:
           method: DELETE
           authorizer:
             type: aws_iam
+  updateBusinessPartner:
+    handler: ./dist/src/handler.updateBusinessPartner
+    events:
+      - http:
+          path: /partners/{awsAccountId}
+          method: PATCH
+          authorizer:
+            type: aws_iam            

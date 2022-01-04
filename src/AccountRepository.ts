@@ -133,7 +133,7 @@ export default class AccountRepository {
   ): Promise<Account | undefined> {
     console.log('AccountRepository.createAccount', {
       account,
-      admin
+      admin,
     });
     const businessPartner = await this.entityManager.findOne(BusinessPartner, {
       awsAccountId: account.awsAccountId,
@@ -202,7 +202,7 @@ export default class AccountRepository {
     console.log('AccountRepository.transferAccountBalance', {
       fromAccount,
       toAccount,
-      transferAmount
+      transferAmount,
     });
     const transactions: WriteTransaction = new WriteTransaction();
 
@@ -264,7 +264,7 @@ export default class AccountRepository {
 
   public async deleteAccount(account: Account): Promise<boolean> {
     console.log('AccountRepository.deleteAccount', {
-      account
+      account,
     });
     const transactions: WriteTransaction = new WriteTransaction();
     transactions.addDeleteItem(Account, account, {
@@ -310,6 +310,25 @@ export default class AccountRepository {
         throw new Error('Something went wrong');
       }
     }
+  }
+
+  public updateBusinessPartner(
+    awsAccountId: string,
+    isAdmin: boolean
+  ): Promise<BusinessPartner | undefined> {
+    console.log('AccountRepository.updateBusinessPartner', {
+      awsAccountId,
+      isAdmin,
+    });
+    return this.entityManager.update(
+      BusinessPartner,
+      { awsAccountId },
+      {
+        admin: {
+          SET: isAdmin,
+        },
+      }
+    );
   }
 
   public decodeCursor(cursor?: string): Record<string, unknown> | undefined {

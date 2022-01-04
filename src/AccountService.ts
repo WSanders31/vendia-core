@@ -2,6 +2,7 @@ import EntityList from './EntityList';
 import Account from './Account';
 import AccountRepository from './AccountRepository';
 import AccountTransfer from './AccountTransfer';
+import BusinessPartner from './BusinessPartner';
 
 export default class AccountService {
   public accountRepository: AccountRepository;
@@ -89,5 +90,23 @@ export default class AccountService {
     );
 
     return deleted;
+  }
+
+  public async getBusinessPartner(
+    awsAccountId: string
+  ): Promise<BusinessPartner | undefined> {
+    console.log('AccountService.getBusinessPartner', { awsAccountId });
+    return this.accountRepository.getBusinessPartner(awsAccountId);
+  }
+
+  public async updateBusinessPartner(
+    awsAccountId: string,
+    admin: boolean
+  ): Promise<BusinessPartner | undefined> {
+    console.log('AccountService.updateBusinessPartner', {
+      awsAccountId,
+      admin,
+    });
+    return this.accountRepository.updateBusinessPartner(awsAccountId, admin);
   }
 }

@@ -3,6 +3,7 @@ import Account from './Account';
 import EntityList from './EntityList';
 import { accountService } from '.';
 import AccountTransfer from './AccountTransfer';
+import BusinessPartner from './BusinessPartner';
 
 export async function getAccountBalance(
   event: APIGatewayEvent
@@ -189,4 +190,51 @@ export async function deleteAccount(
     statusCode: 400,
     body: 'Attribute accountType not provided.',
   };
+}
+
+export async function updateBusinessPartner(
+  event: APIGatewayEvent
+): Promise<APIGatewayProxyResult> {
+  console.log('handler.updateBusinessPartner', event);
+  const awsAccountId: string | undefined = event.pathParameters?.awsAccountId;
+  const callerAWSAccountId: string | null =
+    event.requestContext?.identity?.accountId;
+  if (
+    !callerAWSAccountId ||
+    !awsAccountId ||
+    !event.body ||
+    JSON.parse(event.body).admin === undefined ||
+    typeof JSON.parse(event.body).admin !== 'boolean'
+  ) {
+    return {
+      statusCode: 400,
+      body: 'Missing/improper body containing admin boolean flag',
+    };
+  }
+
+  const caller: BusinessPartner | undefined =
+    await accountService.getBusinessPartner(callerAWSAccountId);
+  if (!caller || !caller.admin) {
+    return {
+      statusCode: 400,
+      body: `You shall not pass.`,
+    };
+  }
+  try {
+    const admin: boolean = JSON.parse(event.body).admin;
+    const businessPartner = await accountService.updateBusinessPartner(
+      awsAccountId,
+      admin
+    );
+
+    return {
+      statusCode: 200,
+      body: JSON.stringify(businessPartner),
+    };
+  } catch (e) {
+    return {
+      statusCode: 400,
+      body: `You shall not pass.`,
+    };
+  }
 }
