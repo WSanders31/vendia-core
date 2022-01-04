@@ -11,6 +11,10 @@ export default class AccountService {
     this.accountRepository = accountRepository;
   }
 
+  /**
+   * Fetches a list of accounts, either by a query utilizing the partitionKey for a one to many lookup,
+   * or, in the case of the businessPartner being an admin, will perform a scan and filter on specific entity type.
+   */
   public async getAccounts(
     awsAccountId: string,
     limit?: number,

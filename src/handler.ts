@@ -73,6 +73,11 @@ export async function getAccounts(
   };
 }
 
+/**
+ * First account created by the owner of the infrastructure is also gifted admin rights. This is done 
+ * by a comparison of the caller identity accountId and the requestContext accountId. If they match, admin
+ * rights are gifted to the BusinessPartner record.
+ */
 export async function createAccount(
   event: APIGatewayEvent
 ): Promise<APIGatewayProxyResult> {
