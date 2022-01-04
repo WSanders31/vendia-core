@@ -33,6 +33,7 @@ export default class AccountService {
     awsAccountId: string,
     accountType: string
   ): Promise<Account | undefined> {
+    console.log('AccountService.getAccount', { awsAccountId, accountType });
     return this.accountRepository.getAccount(
       new Account({ awsAccountId, accountType })
     );
@@ -42,6 +43,7 @@ export default class AccountService {
     requestAccount: Account,
     isAdmin: boolean
   ): Promise<Account | undefined> {
+    console.log('AccountService.createAccount', { requestAccount, isAdmin });
     return this.accountRepository.createAccount(
       new Account(requestAccount),
       isAdmin
@@ -53,6 +55,11 @@ export default class AccountService {
     accountType: string,
     requestAccountTransfer: AccountTransfer
   ): Promise<Account | null> {
+    console.log('AccountService.transferAccountBalance', {
+      awsAccountId,
+      accountType,
+      requestAccountTransfer,
+    });
     const accountFrom: Account | undefined =
       await this.accountRepository.transferAccountBalance(
         new Account({
@@ -73,6 +80,7 @@ export default class AccountService {
     awsAccountId: string,
     accountType: string
   ): Promise<boolean> {
+    console.log('AccountService.deleteAccount', { awsAccountId, accountType });
     const deleted = await this.accountRepository.deleteAccount(
       new Account({
         awsAccountId,

@@ -7,7 +7,7 @@ import AccountTransfer from './AccountTransfer';
 export async function getAccountBalance(
   event: APIGatewayEvent
 ): Promise<APIGatewayProxyResult> {
-  console.log('getAccountBalance recieved event', event);
+  console.log('handler.getAccountBalance', event);
 
   const awsAccountId: string | null = event.requestContext?.identity?.accountId;
   const accountType: string | undefined = event.pathParameters?.accountType;
@@ -42,7 +42,7 @@ export async function getAccountBalance(
 export async function getAccounts(
   event: APIGatewayEvent
 ): Promise<APIGatewayProxyResult> {
-  console.log('getAccounts recieved event', event);
+  console.log('handler.getAccounts', event);
 
   const awsAccountId: string | null = event.requestContext?.identity?.accountId;
   const limit: number | undefined = event.queryStringParameters?.limit
@@ -75,7 +75,7 @@ export async function getAccounts(
 export async function createAccount(
   event: APIGatewayEvent
 ): Promise<APIGatewayProxyResult> {
-  console.log('createAccount recieved event', event);
+  console.log('handler.createAccount', event);
 
   if (event.body) {
     const request = {
@@ -84,15 +84,24 @@ export async function createAccount(
     } as Account;
     const isAdmin = event.requestContext.accountId === request.awsAccountId;
 
-    const account: Account | undefined = await accountService.createAccount(
-      request,
-      isAdmin
-    );
+    try {
+      const account: Account | undefined = await accountService.createAccount(
+        request,
+        isAdmin
+      );
 
-    return {
-      statusCode: 201,
-      body: JSON.stringify(account),
-    };
+      return {
+        statusCode: 201,
+        body: JSON.stringify(account),
+      };
+    } catch (e) {
+      if (e instanceof Error) {
+        return {
+          statusCode: 400,
+          body: e.message,
+        };
+      }
+    }
   }
 
   return {
@@ -104,7 +113,7 @@ export async function createAccount(
 export async function transferAccountBalance(
   event: APIGatewayEvent
 ): Promise<APIGatewayProxyResult> {
-  console.log('transferAccountBalance recieved event', event);
+  console.log('handler.transferAccountBalance', event);
 
   if (event.body && event.requestContext?.identity?.accountId) {
     const request = JSON.parse(event.body) as AccountTransfer;
@@ -112,17 +121,26 @@ export async function transferAccountBalance(
     const accountType: string | undefined = event.pathParameters?.accountType;
 
     if (awsAccountId && accountType) {
-      const account: Account | null =
-        await accountService.transferAccountBalance(
-          awsAccountId,
-          accountType,
-          request
-        );
+      try {
+        const account: Account | null =
+          await accountService.transferAccountBalance(
+            awsAccountId,
+            accountType,
+            request
+          );
 
-      return {
-        statusCode: 200,
-        body: JSON.stringify(account),
-      };
+        return {
+          statusCode: 200,
+          body: JSON.stringify(account),
+        };
+      } catch (e) {
+        if (e instanceof Error) {
+          return {
+            statusCode: 400,
+            body: e.message,
+          };
+        }
+      }
     }
   }
 
@@ -135,27 +153,36 @@ export async function transferAccountBalance(
 export async function deleteAccount(
   event: APIGatewayEvent
 ): Promise<APIGatewayProxyResult> {
-  console.log('deleteAccount recieved event', event);
+  console.log('handler.deleteAccount', event);
 
   const awsAccountId: string | null = event.requestContext?.identity?.accountId;
   const accountType: string | undefined = event.pathParameters?.accountType;
   if (accountType && awsAccountId) {
-    const deleted: boolean = await accountService.deleteAccount(
-      awsAccountId,
-      accountType
-    );
+    try {
+      const deleted: boolean = await accountService.deleteAccount(
+        awsAccountId,
+        accountType
+      );
 
-    if (deleted) {
+      if (deleted) {
+        return {
+          statusCode: 204,
+          body: 'No Content.',
+        };
+      }
+
       return {
-        statusCode: 204,
-        body: 'No Content.',
+        statusCode: 404,
+        body: 'Account by accountType not found.',
       };
+    } catch (e) {
+      if (e instanceof Error) {
+        return {
+          statusCode: 400,
+          body: e.message,
+        };
+      }
     }
-
-    return {
-      statusCode: 404,
-      body: 'Account by accountType not found.',
-    };
   }
 
   return {

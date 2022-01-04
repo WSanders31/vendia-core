@@ -28,7 +28,8 @@ provider:
     STAGE: ${self:provider.stage}
     REGION: ${self:provider.region}
     NODE_OPTIONS: '--enable-source-maps'
-    DEBUG: typedorm:* # // More detailed Dynamodb output.
+    # DEBUG: typedorm:* # // More detailed Dynamodb output.
+    DEBUG: typedorm:*:log
 
   iam:
     role:

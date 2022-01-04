@@ -9,6 +9,7 @@ import Account from './Account';
 import BusinessPartner from './BusinessPartner';
 import AWS from 'aws-sdk';
 import { DocumentClient } from 'aws-sdk/clients/dynamodb';
+import { TransactionCancelledException } from '@typedorm/common';
 
 export default class AccountRepository {
   public connection: Connection;
@@ -36,6 +37,11 @@ export default class AccountRepository {
     pageSize?: number,
     cursor?: string
   ): Promise<EntityList<Account>> {
+    console.log('AccountRepository.getAccounts', {
+      awsAccountId,
+      pageSize,
+      cursor,
+    });
     const results = await this.entityManager.find(
       Account,
       { awsAccountId },
@@ -58,6 +64,11 @@ export default class AccountRepository {
     cursor?: string,
     recursiveResults?: EntityList<Account>
   ): Promise<EntityList<Account>> {
+    console.log('AccountRepository.scanAccounts', {
+      limit,
+      cursor,
+      recursiveResults,
+    });
     const results = await this.dynamodbClient
       .scan({
         TableName: process.env.DYNAMODB || 'DynamoDB Table not defined.',
@@ -100,15 +111,19 @@ export default class AccountRepository {
     return recursiveResults;
   }
 
-  public async getAccount(
-    account: Account
-  ): Promise<Account | undefined> {
+  public async getAccount(account: Account): Promise<Account | undefined> {
+    console.log('AccountRepository.getAccount', {
+      account,
+    });
     return this.entityManager.findOne(Account, account);
   }
 
   public async getBusinessPartner(
     awsAccountId: string
   ): Promise<BusinessPartner | undefined> {
+    console.log('AccountRepository.getBusinessPartner', {
+      awsAccountId,
+    });
     return this.entityManager.findOne(BusinessPartner, { awsAccountId });
   }
 
@@ -116,6 +131,10 @@ export default class AccountRepository {
     account: Account,
     admin?: boolean
   ): Promise<Account | undefined> {
+    console.log('AccountRepository.createAccount', {
+      account,
+      admin
+    });
     const businessPartner = await this.entityManager.findOne(BusinessPartner, {
       awsAccountId: account.awsAccountId,
     });
@@ -150,7 +169,24 @@ export default class AccountRepository {
 
     transactions.addCreateItem(account);
 
-    await this.transactionManager.write(transactions);
+    try {
+      await this.transactionManager.write(transactions);
+    } catch (e) {
+      if (
+        e instanceof TransactionCancelledException &&
+        e.cancellationReasons.some(
+          (cancel: Record<string, string>) =>
+            cancel.code === 'ConditionalCheckFailed'
+        )
+      ) {
+        throw new Error(
+          'Account Type already exists or limit of 10 account types reached.'
+        );
+      } else {
+        console.error('Something went wrong', e);
+        throw new Error('Something went wrong');
+      }
+    }
 
     return this.entityManager.findOne(Account, {
       awsAccountId: account.awsAccountId,
@@ -163,6 +199,11 @@ export default class AccountRepository {
     toAccount: Account,
     transferAmount: number
   ): Promise<Account | undefined> {
+    console.log('AccountRepository.transferAccountBalance', {
+      fromAccount,
+      toAccount,
+      transferAmount
+    });
     const transactions: WriteTransaction = new WriteTransaction();
 
     transactions.addUpdateItem(
@@ -199,50 +240,80 @@ export default class AccountRepository {
         },
       }
     );
-
-    await this.transactionManager.write(transactions);
+    try {
+      await this.transactionManager.write(transactions);
+    } catch (e) {
+      if (
+        e instanceof TransactionCancelledException &&
+        e.cancellationReasons.some(
+          (cancel: Record<string, string>) =>
+            cancel.code === 'ConditionalCheckFailed'
+        )
+      ) {
+        throw new Error(
+          `Source/Destination Account doesn't exist, or not enough balance to transfer funds.`
+        );
+      } else {
+        console.error('Something went wrong', e);
+        throw new Error('Something went wrong');
+      }
+    }
 
     return this.entityManager.findOne(Account, fromAccount);
   }
 
-  public async deleteAccount(
-    account: Account
-  ): Promise<boolean> {
+  public async deleteAccount(account: Account): Promise<boolean> {
+    console.log('AccountRepository.deleteAccount', {
+      account
+    });
     const transactions: WriteTransaction = new WriteTransaction();
-    transactions.addDeleteItem(
-      Account,
-      account,
-      {
-        where: {
-          AND: {
-            awsAccountId: {
-              EQ: account.awsAccountId,
-            },
-            accountType: {
-              EQ: account.accountType,
-            },
-            balance: {
-              EQ: 0,
-            },
+    transactions.addDeleteItem(Account, account, {
+      where: {
+        AND: {
+          awsAccountId: {
+            EQ: account.awsAccountId,
+          },
+          accountType: {
+            EQ: account.accountType,
+          },
+          balance: {
+            EQ: 0,
           },
         },
-      }
-    );
+      },
+    });
 
-    transactions.addUpdateItem(BusinessPartner,
+    transactions.addUpdateItem(
+      BusinessPartner,
       { awsAccountId: account.awsAccountId },
       {
         accountCount: {
           ADD: -1,
         },
-      });
+      }
+    );
+    try {
+      const results = await this.transactionManager.write(transactions);
 
-    const results = await this.transactionManager.write(transactions);
-
-    return results.success;
+      return results.success;
+    } catch (e) {
+      if (
+        e instanceof TransactionCancelledException &&
+        e.cancellationReasons.some(
+          (cancel: Record<string, string>) =>
+            cancel.code === 'ConditionalCheckFailed'
+        )
+      ) {
+        throw new Error(`Account doesn't exist or balance not equal to 0.`);
+      } else {
+        console.log('Something went wrong', e);
+        throw new Error('Something went wrong');
+      }
+    }
   }
 
   public decodeCursor(cursor?: string): Record<string, unknown> | undefined {
+    console.log('AccountRepository.decodeCursor', cursor);
     let cursorKey: Record<string, unknown> | undefined = undefined;
     if (cursor) {
       cursorKey = JSON.parse(Buffer.from(cursor, 'base64').toString());
@@ -254,6 +325,7 @@ export default class AccountRepository {
   public encodeCursor(
     cursor?: Record<string, unknown> | undefined
   ): string | undefined {
+    console.log('AccountRepository.encodeCursor', cursor);
     let cursorKey: string | undefined = undefined;
     if (cursor) {
       cursorKey = Buffer.from(JSON.stringify(cursor), 'binary').toString(
