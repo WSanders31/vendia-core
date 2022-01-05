@@ -68,8 +68,8 @@ export async function getAccounts(
   }
 
   return {
-    statusCode: 200,
-    body: JSON.stringify([]),
+    statusCode: 400,
+    body: 'AWS Account Id not provided.',
   };
 }
 
