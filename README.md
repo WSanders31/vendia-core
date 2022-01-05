@@ -6,15 +6,23 @@ A few scripts exist to simplify how to deploy this application in an `AWS` envir
 
 *Deploy* - `npm i && npm run deploy` (`--stage=yourstage` can also be passed in)
 
-This will deploy infrastructure stacks in proper order, as well as transpile Typescript to Javascript.
+This will deploy infrastructure stacks in proper order, as well upload code artifacts - everything will be operational after this command is run.
 
 *Destroy* - `npm run destroy` (`--stage=yourstage` can also be passed in)
 
-This will tear down all of the infrastructure stacks in proper order.
+This will tear down all of the infrastructure stacks in proper order, leaving a clean AWS environment.
 
 *Individual Deploys* - `npx sls deploy -c=serverless.file.yml` (`--stage=yourstage` can also be passed in)
 
 You can, of course, also deploy individual stacks by themselves if necessary.
+
+*Test* - `npm run test`
+
+This will run Jest tests in silent mode. 
+
+*Lint* - `npm run lint`
+
+*Format* - `npm run format`
 
 ## API Documentation
 

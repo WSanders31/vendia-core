@@ -6,9 +6,9 @@
   "scripts": {
     "deploy": "npx tsc && npx sls deploy -c=serverless.static.yml && npx sls deploy -c=serverless.data.yml --stage=$npm_config_stage && npx tsc && npx sls deploy -c=serverless.yml --stage=$npm_config_stage",
     "destroy": "npx sls remove -c=serverless.yml --stage=$npm_config_stage && npx sls remove -c=serverless.data.yml --stage=$npm_config_stage && npx sls remove -c=serverless.static.yml",
+    "test": "npx jest --silent",
     "format": "prettier --ignore-path .gitignore --write \"**/*.+(js|ts|json)\"",
-    "lint": "eslint . --ignore-path .gitignore --ext .ts",
-    "test": "npx jest"
+    "lint": "eslint . --ignore-path .gitignore --ext .ts"
   },
   "repository": {
     "type": "git",
