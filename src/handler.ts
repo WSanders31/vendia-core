@@ -128,7 +128,7 @@ export async function transferAccountBalance(
 
     if (awsAccountId && accountType) {
       try {
-        const account: Account | null =
+        const account: Account | undefined =
           await accountService.transferAccountBalance(
             awsAccountId,
             accountType,

@@ -1,144 +1,705 @@
-import * as handler from '../../src/handler';
-import { accountService } from '../../src';
+import { accountRepository, accountService } from '../../src';
 import Account from '../../src/Account';
-import { APIGatewayEvent, APIGatewayProxyResult } from 'aws-lambda';
 import EntityList from '../../src/EntityList';
-import AccountTransfer from '../../src/AccountTransfer';
 import BusinessPartner from '../../src/BusinessPartner';
+import AccountTransfer from '../../src/AccountTransfer';
 
 beforeEach(() => {
   jest.resetAllMocks();
 });
 
-describe('getAccountBalance', () => {
-  it('should get an Accounts balance and return 200', async () => {
-    const accountServiceSpy = jest.spyOn(accountService, 'getAccount');
-    const mockResult: Account = new Account({
-      awsAccountId: '1337',
-      accountType: 'Checking',
-      balance: 100,
-    });
-
-    accountServiceSpy.mockImplementation((): Promise<Account> => {
-      return Promise.resolve(mockResult);
-    });
-
-    const apiGatewayResult: APIGatewayProxyResult =
-      await handler.getAccountBalance({
-        requestContext: {
-          identity: {
-            accountId: '1337',
-          },
-        },
-        pathParameters: {
-          accountType: 'Checking',
-        },
-      } as unknown as APIGatewayEvent);
-
-    const resultBody: Account = JSON.parse(apiGatewayResult.body) as Account;
-
-    expect(accountServiceSpy).toHaveBeenCalledWith(
-      mockResult.awsAccountId,
-      mockResult.accountType
+describe('getAccounts', () => {
+  it('should call AccountRepository getAccounts and return a promise as non-admin', async () => {
+    const accountRepositoryGetAccountsSpy = jest.spyOn(
+      accountRepository,
+      'getAccounts'
     );
-    expect(apiGatewayResult).toBeDefined();
-    expect(apiGatewayResult.statusCode).toEqual(200);
-    expect(resultBody).toBeDefined();
-    expect(resultBody.balance).toEqual(mockResult.balance);
+    const accountRepositoryGetBusinessPartnerSpy = jest.spyOn(
+      accountRepository,
+      'getBusinessPartner'
+    );
+
+    const entityListResult = {
+      items: [
+        new Account({
+          awsAccountId: '1337',
+          accountType: 'Testing',
+        }),
+      ],
+      count: 1,
+    };
+    accountRepositoryGetAccountsSpy.mockImplementation(
+      (): Promise<EntityList<Account>> => {
+        return Promise.resolve(entityListResult);
+      }
+    );
+
+    accountRepositoryGetBusinessPartnerSpy.mockImplementation(
+      (): Promise<BusinessPartner> => {
+        return Promise.resolve(
+          new BusinessPartner({
+            awsAccountId: '1337',
+            admin: false,
+          })
+        );
+      }
+    );
+
+    const results: EntityList<Account> = await accountService.getAccounts(
+      '1337'
+    );
+
+    expect(accountRepositoryGetBusinessPartnerSpy).toHaveBeenCalledWith('1337');
+    expect(accountRepositoryGetAccountsSpy).toHaveBeenCalledWith(
+      '1337',
+      undefined,
+      undefined
+    );
+    expect(results).toBeDefined();
+    expect(results).toEqual(entityListResult);
   });
 
-  it('should not find an Account and return 404', async () => {
-    const accountServiceSpy = jest.spyOn(accountService, 'getAccount');
-    const mockResult: Account = new Account({
+  it('should call AccountRepository getAccounts with limit and return a promise as non-admin', async () => {
+    const accountRepositoryGetAccountsSpy = jest.spyOn(
+      accountRepository,
+      'getAccounts'
+    );
+    const accountRepositoryGetBusinessPartnerSpy = jest.spyOn(
+      accountRepository,
+      'getBusinessPartner'
+    );
+
+    const entityListResult = {
+      items: [
+        new Account({
+          awsAccountId: '1337',
+          accountType: 'Testing',
+        }),
+      ],
+      count: 1,
+    };
+    accountRepositoryGetAccountsSpy.mockImplementation(
+      (): Promise<EntityList<Account>> => {
+        return Promise.resolve(entityListResult);
+      }
+    );
+
+    accountRepositoryGetBusinessPartnerSpy.mockImplementation(
+      (): Promise<BusinessPartner> => {
+        return Promise.resolve(
+          new BusinessPartner({
+            awsAccountId: '1337',
+            admin: false,
+          })
+        );
+      }
+    );
+
+    const results: EntityList<Account> = await accountService.getAccounts(
+      '1337',
+      5
+    );
+
+    expect(accountRepositoryGetBusinessPartnerSpy).toHaveBeenCalledWith('1337');
+    expect(accountRepositoryGetAccountsSpy).toHaveBeenCalledWith(
+      '1337',
+      5,
+      undefined
+    );
+    expect(results).toBeDefined();
+    expect(results).toEqual(entityListResult);
+  });
+
+  it('should call AccountRepository getAccounts with limit and cursor and return a promise as non-admin', async () => {
+    const accountRepositoryGetAccountsSpy = jest.spyOn(
+      accountRepository,
+      'getAccounts'
+    );
+    const accountRepositoryGetBusinessPartnerSpy = jest.spyOn(
+      accountRepository,
+      'getBusinessPartner'
+    );
+
+    const entityListResult = {
+      items: [
+        new Account({
+          awsAccountId: '1337',
+          accountType: 'Testing',
+        }),
+      ],
+      count: 1,
+    };
+    accountRepositoryGetAccountsSpy.mockImplementation(
+      (): Promise<EntityList<Account>> => {
+        return Promise.resolve(entityListResult);
+      }
+    );
+
+    accountRepositoryGetBusinessPartnerSpy.mockImplementation(
+      (): Promise<BusinessPartner> => {
+        return Promise.resolve(
+          new BusinessPartner({
+            awsAccountId: '1337',
+            admin: false,
+          })
+        );
+      }
+    );
+
+    const results: EntityList<Account> = await accountService.getAccounts(
+      '1337',
+      undefined,
+      'fakeCursor'
+    );
+
+    expect(accountRepositoryGetBusinessPartnerSpy).toHaveBeenCalledWith('1337');
+    expect(accountRepositoryGetAccountsSpy).toHaveBeenCalledWith(
+      '1337',
+      undefined,
+      'fakeCursor'
+    );
+    expect(results).toBeDefined();
+    expect(results).toEqual(entityListResult);
+  });
+
+  it('should call AccountRepository getAccounts with cursor and return a promise as non-admin', async () => {
+    const accountRepositoryGetAccountsSpy = jest.spyOn(
+      accountRepository,
+      'getAccounts'
+    );
+    const accountRepositoryGetBusinessPartnerSpy = jest.spyOn(
+      accountRepository,
+      'getBusinessPartner'
+    );
+
+    const entityListResult = {
+      items: [
+        new Account({
+          awsAccountId: '1337',
+          accountType: 'Testing',
+        }),
+      ],
+      count: 1,
+    };
+    accountRepositoryGetAccountsSpy.mockImplementation(
+      (): Promise<EntityList<Account>> => {
+        return Promise.resolve(entityListResult);
+      }
+    );
+
+    accountRepositoryGetBusinessPartnerSpy.mockImplementation(
+      (): Promise<BusinessPartner> => {
+        return Promise.resolve(
+          new BusinessPartner({
+            awsAccountId: '1337',
+            admin: false,
+          })
+        );
+      }
+    );
+
+    const results: EntityList<Account> = await accountService.getAccounts(
+      '1337',
+      5,
+      'fakeCursor'
+    );
+
+    expect(accountRepositoryGetBusinessPartnerSpy).toHaveBeenCalledWith('1337');
+    expect(accountRepositoryGetAccountsSpy).toHaveBeenCalledWith(
+      '1337',
+      5,
+      'fakeCursor'
+    );
+    expect(results).toBeDefined();
+    expect(results).toEqual(entityListResult);
+  });
+
+  it('should call AccountRepository scanAccounts and return a promise as admin', async () => {
+    const accountRepositoryScanAccountsSpy = jest.spyOn(
+      accountRepository,
+      'scanAccounts'
+    );
+    const accountRepositoryGetBusinessPartnerSpy = jest.spyOn(
+      accountRepository,
+      'getBusinessPartner'
+    );
+
+    const entityListResult = {
+      items: [
+        new Account({
+          awsAccountId: '1337',
+          accountType: 'Testing',
+        }),
+      ],
+      count: 1,
+    };
+    accountRepositoryScanAccountsSpy.mockImplementation(
+      (): Promise<EntityList<Account>> => {
+        return Promise.resolve(entityListResult);
+      }
+    );
+
+    accountRepositoryGetBusinessPartnerSpy.mockImplementation(
+      (): Promise<BusinessPartner> => {
+        return Promise.resolve(
+          new BusinessPartner({
+            awsAccountId: '1337',
+            admin: true,
+          })
+        );
+      }
+    );
+
+    const results: EntityList<Account> = await accountService.getAccounts(
+      '1337'
+    );
+
+    expect(accountRepositoryGetBusinessPartnerSpy).toHaveBeenCalledWith('1337');
+    expect(accountRepositoryScanAccountsSpy).toHaveBeenCalledWith(
+      undefined,
+      undefined
+    );
+    expect(results).toBeDefined();
+    expect(results).toEqual(entityListResult);
+  });
+
+  it('should call AccountRepository scanAccounts with limit and return a promise as admin', async () => {
+    const accountRepositoryScanAccountsSpy = jest.spyOn(
+      accountRepository,
+      'scanAccounts'
+    );
+    const accountRepositoryGetBusinessPartnerSpy = jest.spyOn(
+      accountRepository,
+      'getBusinessPartner'
+    );
+
+    const entityListResult = {
+      items: [
+        new Account({
+          awsAccountId: '1337',
+          accountType: 'Testing',
+        }),
+      ],
+      count: 1,
+    };
+    accountRepositoryScanAccountsSpy.mockImplementation(
+      (): Promise<EntityList<Account>> => {
+        return Promise.resolve(entityListResult);
+      }
+    );
+
+    accountRepositoryGetBusinessPartnerSpy.mockImplementation(
+      (): Promise<BusinessPartner> => {
+        return Promise.resolve(
+          new BusinessPartner({
+            awsAccountId: '1337',
+            admin: true,
+          })
+        );
+      }
+    );
+
+    const results: EntityList<Account> = await accountService.getAccounts(
+      '1337',
+      5
+    );
+
+    expect(accountRepositoryGetBusinessPartnerSpy).toHaveBeenCalledWith('1337');
+    expect(accountRepositoryScanAccountsSpy).toHaveBeenCalledWith(5, undefined);
+    expect(results).toBeDefined();
+    expect(results).toEqual(entityListResult);
+  });
+
+  it('should call AccountRepository scanAccounts with cursor and return a promise as admin', async () => {
+    const accountRepositoryScanAccountsSpy = jest.spyOn(
+      accountRepository,
+      'scanAccounts'
+    );
+    const accountRepositoryGetBusinessPartnerSpy = jest.spyOn(
+      accountRepository,
+      'getBusinessPartner'
+    );
+
+    const entityListResult = {
+      items: [
+        new Account({
+          awsAccountId: '1337',
+          accountType: 'Testing',
+        }),
+      ],
+      count: 1,
+    };
+    accountRepositoryScanAccountsSpy.mockImplementation(
+      (): Promise<EntityList<Account>> => {
+        return Promise.resolve(entityListResult);
+      }
+    );
+
+    accountRepositoryGetBusinessPartnerSpy.mockImplementation(
+      (): Promise<BusinessPartner> => {
+        return Promise.resolve(
+          new BusinessPartner({
+            awsAccountId: '1337',
+            admin: true,
+          })
+        );
+      }
+    );
+
+    const results: EntityList<Account> = await accountService.getAccounts(
+      '1337',
+      undefined,
+      'fakeCursor'
+    );
+
+    expect(accountRepositoryGetBusinessPartnerSpy).toHaveBeenCalledWith('1337');
+    expect(accountRepositoryScanAccountsSpy).toHaveBeenCalledWith(
+      undefined,
+      'fakeCursor'
+    );
+    expect(results).toBeDefined();
+    expect(results).toEqual(entityListResult);
+  });
+
+  it('should call AccountRepository scanAccounts with limit and cursor and return a promise as admin', async () => {
+    const accountRepositoryScanAccountsSpy = jest.spyOn(
+      accountRepository,
+      'scanAccounts'
+    );
+    const accountRepositoryGetBusinessPartnerSpy = jest.spyOn(
+      accountRepository,
+      'getBusinessPartner'
+    );
+
+    const entityListResult = {
+      items: [
+        new Account({
+          awsAccountId: '1337',
+          accountType: 'Testing',
+        }),
+      ],
+      count: 1,
+    };
+    accountRepositoryScanAccountsSpy.mockImplementation(
+      (): Promise<EntityList<Account>> => {
+        return Promise.resolve(entityListResult);
+      }
+    );
+
+    accountRepositoryGetBusinessPartnerSpy.mockImplementation(
+      (): Promise<BusinessPartner> => {
+        return Promise.resolve(
+          new BusinessPartner({
+            awsAccountId: '1337',
+            admin: true,
+          })
+        );
+      }
+    );
+
+    const results: EntityList<Account> = await accountService.getAccounts(
+      '1337',
+      5,
+      'fakeCursor'
+    );
+
+    expect(accountRepositoryGetBusinessPartnerSpy).toHaveBeenCalledWith('1337');
+    expect(accountRepositoryScanAccountsSpy).toHaveBeenCalledWith(
+      5,
+      'fakeCursor'
+    );
+    expect(results).toBeDefined();
+    expect(results).toEqual(entityListResult);
+  });
+});
+
+describe('getAccount', () => {
+  it('should call accountRepository getAccount and return an account', async () => {
+    const accountRepositorySpy = jest.spyOn(accountRepository, 'getAccount');
+    const returnAccount = new Account({
       awsAccountId: '1337',
-      accountType: 'Checking',
-      balance: 100,
+      accountType: 'Testing',
+    });
+    accountRepositorySpy.mockImplementation((): Promise<Account> => {
+      return Promise.resolve(returnAccount);
     });
 
-    accountServiceSpy.mockImplementation((): Promise<Account | undefined> => {
+    const result = await accountService.getAccount('1337', 'Testing');
+
+    expect(accountRepositorySpy).toHaveBeenCalledWith(returnAccount);
+    expect(result).toBeDefined();
+    expect(result).toEqual(returnAccount);
+  });
+
+  it('should call accountRepository getAccount and return undefined', async () => {
+    const accountRepositorySpy = jest.spyOn(accountRepository, 'getAccount');
+    const returnAccount = new Account({
+      awsAccountId: '1337',
+      accountType: 'Testing',
+    });
+    accountRepositorySpy.mockImplementation((): Promise<undefined> => {
       return Promise.resolve(undefined);
     });
 
-    const apiGatewayResult: APIGatewayProxyResult =
-      await handler.getAccountBalance({
-        requestContext: {
-          identity: {
-            accountId: '1337',
-          },
-        },
-        pathParameters: {
-          accountType: 'Checking',
-        },
-      } as unknown as APIGatewayEvent);
+    const result = await accountService.getAccount('1337', 'Testing');
 
-    expect(accountServiceSpy).toHaveBeenCalledWith(
-      mockResult.awsAccountId,
-      mockResult.accountType
-    );
-    expect(apiGatewayResult).toBeDefined();
-    expect(apiGatewayResult.statusCode).toEqual(404);
-    expect(apiGatewayResult.body).toEqual('Account not found');
+    expect(accountRepositorySpy).toHaveBeenCalledWith(returnAccount);
+    expect(result).toBeUndefined();
   });
+});
 
-  it('should recieve a malformed request missing awsAccountId and return 400', async () => {
-    const accountServiceSpy = jest.spyOn(accountService, 'getAccount');
-    const mockResult: Account = new Account({
+describe('createAccount', () => {
+  it('should call accountRepository createAccount not as admin and return a promise', async () => {
+    const accountRepositorySpy = jest.spyOn(accountRepository, 'createAccount');
+    const returnAccount = new Account({
       awsAccountId: '1337',
-      accountType: 'Checking',
-      balance: 100,
+      accountType: 'Testing',
+    });
+    accountRepositorySpy.mockImplementation((): Promise<Account> => {
+      return Promise.resolve(returnAccount);
     });
 
-    accountServiceSpy.mockImplementation((): Promise<Account | undefined> => {
+    const result = await accountService.createAccount(returnAccount, false);
+
+    expect(accountRepositorySpy).toHaveBeenCalledWith(returnAccount, false);
+    expect(result).toBeDefined();
+    expect(result).toEqual(returnAccount);
+  });
+
+  it('should call accountRepository createAccount as admin and return a promise', async () => {
+    const accountRepositorySpy = jest.spyOn(accountRepository, 'createAccount');
+    const returnAccount = new Account({
+      awsAccountId: '1337',
+      accountType: 'Testing',
+    });
+    accountRepositorySpy.mockImplementation((): Promise<Account> => {
+      return Promise.resolve(returnAccount);
+    });
+
+    const result = await accountService.createAccount(returnAccount, true);
+
+    expect(accountRepositorySpy).toHaveBeenCalledWith(returnAccount, true);
+    expect(result).toBeDefined();
+    expect(result).toEqual(returnAccount);
+  });
+});
+
+describe('transferAccountBalance', () => {
+  it('should call accountRepository transferAccountBalance and return the senders account', async () => {
+    const accountRepositorySpy = jest.spyOn(
+      accountRepository,
+      'transferAccountBalance'
+    );
+    const returnAccount = new Account({
+      awsAccountId: '1337',
+      accountType: 'Testing',
+      balance: 1337,
+    });
+    const accountTransfer: AccountTransfer = {
+      transferToAwsAccountId: '1338',
+      transferToAccountType: 'Savings',
+      transferAmount: 50,
+    };
+    accountRepositorySpy.mockImplementation((): Promise<Account> => {
+      return Promise.resolve(returnAccount);
+    });
+
+    const result = await accountService.transferAccountBalance(
+      '1337',
+      'Testing',
+      accountTransfer
+    );
+
+    expect(accountRepositorySpy).toHaveBeenCalledWith(
+      new Account({
+        awsAccountId: returnAccount.awsAccountId,
+        accountType: returnAccount.accountType,
+      }),
+      new Account({
+        awsAccountId: accountTransfer.transferToAwsAccountId,
+        accountType: accountTransfer.transferToAccountType,
+      }),
+      accountTransfer.transferAmount
+    );
+    expect(result).toBeDefined();
+    expect(result).toEqual(returnAccount);
+  });
+
+  it('should call accountRepository transferAccountBalance and return undefined', async () => {
+    const accountRepositorySpy = jest.spyOn(
+      accountRepository,
+      'transferAccountBalance'
+    );
+    const returnAccount = new Account({
+      awsAccountId: '1337',
+      accountType: 'Testing',
+      balance: 1337,
+    });
+    const accountTransfer: AccountTransfer = {
+      transferToAwsAccountId: '1338',
+      transferToAccountType: 'Savings',
+      transferAmount: 50,
+    };
+    accountRepositorySpy.mockImplementation((): Promise<undefined> => {
       return Promise.resolve(undefined);
     });
 
-    const apiGatewayResult: APIGatewayProxyResult =
-      await handler.getAccountBalance({
-        requestContext: {
-          identity: {},
-        },
-        pathParameters: {
-          accountType: 'Checking',
-        },
-      } as unknown as APIGatewayEvent);
-
-    expect(accountServiceSpy).not.toHaveBeenCalled();
-    expect(apiGatewayResult).toBeDefined();
-    expect(apiGatewayResult.statusCode).toEqual(400);
-    expect(apiGatewayResult.body).toEqual(
-      'AWS Account Id or Account Type not specified.'
+    const result = await accountService.transferAccountBalance(
+      '1337',
+      'Testing',
+      accountTransfer
     );
-  });
 
-  it('should recieve a malformed request missing accountType and return 400', async () => {
-    const accountServiceSpy = jest.spyOn(accountService, 'getAccount');
-    const mockResult: Account = new Account({
-      awsAccountId: '1337',
-      accountType: 'Checking',
-      balance: 100,
+    expect(accountRepositorySpy).toHaveBeenCalledWith(
+      new Account({
+        awsAccountId: returnAccount.awsAccountId,
+        accountType: returnAccount.accountType,
+      }),
+      new Account({
+        awsAccountId: accountTransfer.transferToAwsAccountId,
+        accountType: accountTransfer.transferToAccountType,
+      }),
+      accountTransfer.transferAmount
+    );
+    expect(result).toBeUndefined();
+  });
+});
+
+describe('deleteAccount', () => {
+  it('should call accountRepository deleteAccount and return true', async () => {
+    const accountRepositorySpy = jest.spyOn(accountRepository, 'deleteAccount');
+
+    accountRepositorySpy.mockImplementation((): Promise<boolean> => {
+      return Promise.resolve(true);
     });
 
-    accountServiceSpy.mockImplementation((): Promise<Account | undefined> => {
+    const result = await accountService.deleteAccount('1337', 'Checking');
+
+    expect(accountRepositorySpy).toHaveBeenCalledWith(
+      new Account({
+        awsAccountId: '1337',
+        accountType: 'Checking',
+      })
+    );
+    expect(result).toBeDefined();
+    expect(result).toEqual(true);
+  });
+
+  it('should call accountRepository deleteAccount and return false', async () => {
+    const accountRepositorySpy = jest.spyOn(accountRepository, 'deleteAccount');
+
+    accountRepositorySpy.mockImplementation((): Promise<boolean> => {
+      return Promise.resolve(false);
+    });
+
+    const result = await accountService.deleteAccount('1337', 'Checking');
+
+    expect(accountRepositorySpy).toHaveBeenCalledWith(
+      new Account({
+        awsAccountId: '1337',
+        accountType: 'Checking',
+      })
+    );
+    expect(result).toBeDefined();
+    expect(result).toEqual(false);
+  });
+});
+
+describe('getBusinessPartner', () => {
+  it('should call accountRepository getAccount and return an account', async () => {
+    const accountRepositorySpy = jest.spyOn(
+      accountRepository,
+      'getBusinessPartner'
+    );
+    const returnPartner = new BusinessPartner({
+      awsAccountId: '1337',
+    });
+    accountRepositorySpy.mockImplementation((): Promise<BusinessPartner> => {
+      return Promise.resolve(returnPartner);
+    });
+
+    const result = await accountService.getBusinessPartner('1337');
+
+    expect(accountRepositorySpy).toHaveBeenCalledWith('1337');
+    expect(result).toBeDefined();
+    expect(result).toEqual(returnPartner);
+  });
+
+  it('should call accountRepository getAccount and return undefined', async () => {
+    const accountRepositorySpy = jest.spyOn(
+      accountRepository,
+      'getBusinessPartner'
+    );
+    const returnPartner = new BusinessPartner({
+      awsAccountId: '1337',
+    });
+    accountRepositorySpy.mockImplementation((): Promise<undefined> => {
       return Promise.resolve(undefined);
     });
 
-    const apiGatewayResult: APIGatewayProxyResult =
-      await handler.getAccountBalance({
-        requestContext: {
-          identity: {
-            accountId: '1337',
-          },
-        },
-        pathParameters: {
-          accountType: '',
-        },
-      } as unknown as APIGatewayEvent);
+    const result = await accountService.getBusinessPartner('1337');
 
-    expect(accountServiceSpy).not.toHaveBeenCalled();
-    expect(apiGatewayResult).toBeDefined();
-    expect(apiGatewayResult.statusCode).toEqual(400);
-    expect(apiGatewayResult.body).toEqual(
-      'AWS Account Id or Account Type not specified.'
-    );
+    expect(accountRepositorySpy).toHaveBeenCalledWith('1337');
+    expect(result).toBeUndefined();
   });
+});
+
+describe('updateBusinessPartner', () => {
+    it('should call accountRepository updateBusinessPartner with admin true and return a partner', async () => {
+        const accountRepositorySpy = jest.spyOn(
+          accountRepository,
+          'updateBusinessPartner'
+        );
+        const returnPartner = new BusinessPartner({
+          awsAccountId: '1337',
+          admin: true
+        });
+        accountRepositorySpy.mockImplementation((): Promise<BusinessPartner> => {
+          return Promise.resolve(returnPartner);
+        });
+    
+        const result = await accountService.updateBusinessPartner('1337', true);
+    
+        expect(accountRepositorySpy).toHaveBeenCalledWith('1337', true);
+        expect(result).toBeDefined();
+        expect(result).toEqual(returnPartner);
+      });
+
+      it('should call accountRepository updateBusinessPartner with admin false and return a partner', async () => {
+        const accountRepositorySpy = jest.spyOn(
+          accountRepository,
+          'updateBusinessPartner'
+        );
+        const returnPartner = new BusinessPartner({
+          awsAccountId: '1337',
+          admin: false
+        });
+        accountRepositorySpy.mockImplementation((): Promise<BusinessPartner> => {
+          return Promise.resolve(returnPartner);
+        });
+    
+        const result = await accountService.updateBusinessPartner('1337', false);
+    
+        expect(accountRepositorySpy).toHaveBeenCalledWith('1337', false);
+        expect(result).toBeDefined();
+        expect(result).toEqual(returnPartner);
+      });
+    
+      it('should call accountRepository updateBusinessPartner and return undefined', async () => {
+        const accountRepositorySpy = jest.spyOn(
+          accountRepository,
+          'updateBusinessPartner'
+        );
+        const returnPartner = new BusinessPartner({
+          awsAccountId: '1337',
+        });
+        accountRepositorySpy.mockImplementation((): Promise<undefined> => {
+          return Promise.resolve(undefined);
+        });
+    
+        const result = await accountService.updateBusinessPartner('1337', false);
+    
+        expect(accountRepositorySpy).toHaveBeenCalledWith('1337', false);
+        expect(result).toBeUndefined();
+      });
 });

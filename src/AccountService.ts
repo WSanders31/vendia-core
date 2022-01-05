@@ -25,9 +25,9 @@ export default class AccountService {
       limit,
       cursor,
     });
-    const root = await this.accountRepository.getBusinessPartner(awsAccountId);
+    const partner = await this.accountRepository.getBusinessPartner(awsAccountId);
 
-    if (root && !root.admin) {
+    if (partner && !partner.admin) {
       return this.accountRepository.getAccounts(awsAccountId, limit, cursor);
     } else {
       return this.accountRepository.scanAccounts(limit, cursor);
@@ -59,7 +59,7 @@ export default class AccountService {
     awsAccountId: string,
     accountType: string,
     requestAccountTransfer: AccountTransfer
-  ): Promise<Account | null> {
+  ): Promise<Account | undefined> {
     console.log('AccountService.transferAccountBalance', {
       awsAccountId,
       accountType,
@@ -78,7 +78,7 @@ export default class AccountService {
         requestAccountTransfer.transferAmount
       );
 
-    return accountFrom || null;
+    return accountFrom || undefined;
   }
 
   public async deleteAccount(
