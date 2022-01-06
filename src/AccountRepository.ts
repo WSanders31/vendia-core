@@ -1,5 +1,4 @@
 import {
-  Connection,
   EntityManager,
   TransactionManager,
   WriteTransaction,
@@ -12,24 +11,21 @@ import { DocumentClient } from 'aws-sdk/clients/dynamodb';
 import { TransactionCancelledException } from '@typedorm/common';
 
 export default class AccountRepository {
-  public connection: Connection;
-
   public entityManager: EntityManager;
   public transactionManager: TransactionManager;
   public dynamodbClient: DocumentClient;
 
   public constructor(
-    connection: Connection,
     entityManager: EntityManager,
-    transactionManager: TransactionManager
+    transactionManager: TransactionManager,
+    dynamodbClient: DocumentClient
   ) {
-    this.connection = connection;
     this.entityManager = entityManager;
     this.transactionManager = transactionManager;
     AWS.config.update({
       region: process.env.REGION,
     });
-    this.dynamodbClient = new AWS.DynamoDB.DocumentClient();
+    this.dynamodbClient = dynamodbClient;
   }
 
   public async getAccounts(
@@ -105,10 +101,10 @@ export default class AccountRepository {
     if (
       recursiveResults.cursor &&
       limit &&
-      limit > (recursiveResults.items?.length || 0)
+      limit > (results.Items?.length || 0)
     ) {
       recursiveResults = await this.scanAccounts(
-        limit - (recursiveResults.items?.length || 0),
+        limit - (results.Items?.length || 0),
         recursiveResults.cursor,
         recursiveResults
       );
@@ -189,6 +185,7 @@ export default class AccountRepository {
             cancel.code === 'ConditionalCheckFailed'
         )
       ) {
+        console.error('ConditionalCheckFailed: ', e);
         throw new Error(
           'Account Type already exists or limit of 10 account types reached.'
         );
@@ -266,6 +263,7 @@ export default class AccountRepository {
             cancel.code === 'ConditionalCheckFailed'
         )
       ) {
+        console.error('ConditionalCheckFailed: ', e);
         throw new Error(
           `Source/Destination Account doesn't exist, or not enough balance to transfer funds.`
         );
@@ -325,6 +323,7 @@ export default class AccountRepository {
             cancel.code === 'ConditionalCheckFailed'
         )
       ) {
+        console.error('ConditionalCheckFailed: ', e);
         throw new Error(`Account doesn't exist or balance not equal to 0.`);
       } else {
         console.log('Something went wrong', e);
@@ -353,7 +352,7 @@ export default class AccountRepository {
   }
 
   /**
-   * Helper functions to encode and decode pagination cursors, automatically URI Encodes for easy consumption.
+   * Helper functions to encode and decode pagination cursors.
    */
   public decodeCursor(cursor?: string): Record<string, unknown> | undefined {
     console.log('AccountRepository.decodeCursor', cursor);

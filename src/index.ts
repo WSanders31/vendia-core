@@ -37,10 +37,10 @@ const entityManager = connection.entityManager;
 const transactionManager = connection.transactionManger;
 
 const accountRepository = new AccountRepository(
-  connection,
   entityManager,
-  transactionManager
+  transactionManager,
+  new AWS.DynamoDB.DocumentClient()
 );
 const accountService = new AccountService(accountRepository);
 
-export { connection, entityManager, accountService, accountRepository };
+export { entityManager, accountService, accountRepository };
