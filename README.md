@@ -32,7 +32,7 @@ region: us-east-2
 stage dev
 ```
 
-GET `https://{{api_id}}.execute-api.{{region}}.amazonaws.com/{{stage}}/accounts`
+GET `https://{{api_id}}.execute-api.{{region}}.amazonaws.com/{{stage}}/accounts?limit={number}&cursor={string}`
 
 GET `https://{{api_id}}.execute-api.{{region}}.amazonaws.com/{{stage}}/accounts/{accountType}`
 
