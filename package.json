@@ -27,6 +27,7 @@
     "@types/jest": "^27.0.3",
     "@typescript-eslint/eslint-plugin": "^5.8.0",
     "@typescript-eslint/parser": "^5.8.0",
+    "aws4": "^1.11.0",
     "aws-sdk": "^2.1048.0",
     "eslint": "^7.32.0",
     "eslint-config-prettier": "^8.3.0",
@@ -44,7 +45,6 @@
     "@tsoa/runtime": "^3.13.0",
     "@typedorm/common": "^1.14.9",
     "@typedorm/core": "^1.14.9",
-    "aws4": "^1.11.0",
     "reflect-metadata": "^0.1.13"
   }
 }

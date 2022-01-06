@@ -95,7 +95,7 @@ export async function createAccount(
         request,
         isAdmin
       );
-
+      console.log('Account created: ', account);
       return {
         statusCode: 201,
         body: JSON.stringify(account),
@@ -134,7 +134,7 @@ export async function transferAccountBalance(
             accountType,
             request
           );
-
+        console.log('Account balance transfered: ', request, account);
         return {
           statusCode: 200,
           body: JSON.stringify(account),
@@ -171,6 +171,7 @@ export async function deleteAccount(
       );
 
       if (deleted) {
+        console.log('Account Deleted', { awsAccountId, accountType });
         return {
           statusCode: 204,
           body: 'No Content.',

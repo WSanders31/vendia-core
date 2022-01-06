@@ -194,7 +194,7 @@ export default class AccountRepository {
         throw new Error('Something went wrong');
       }
     }
-
+    
     return this.entityManager.findOne(Account, {
       awsAccountId: account.awsAccountId,
       accountType: account.accountType,
