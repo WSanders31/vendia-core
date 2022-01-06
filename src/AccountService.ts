@@ -25,7 +25,9 @@ export default class AccountService {
       limit,
       cursor,
     });
-    const partner = await this.accountRepository.getBusinessPartner(awsAccountId);
+    const partner = await this.accountRepository.getBusinessPartner(
+      awsAccountId
+    );
 
     if (partner && !partner.admin) {
       return this.accountRepository.getAccounts(awsAccountId, limit, cursor);

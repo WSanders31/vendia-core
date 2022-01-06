@@ -630,9 +630,7 @@ describe('getBusinessPartner', () => {
       accountRepository,
       'getBusinessPartner'
     );
-    const returnPartner = new BusinessPartner({
-      awsAccountId: '1337',
-    });
+
     accountRepositorySpy.mockImplementation((): Promise<undefined> => {
       return Promise.resolve(undefined);
     });
@@ -645,61 +643,59 @@ describe('getBusinessPartner', () => {
 });
 
 describe('updateBusinessPartner', () => {
-    it('should call accountRepository updateBusinessPartner with admin true and return a partner', async () => {
-        const accountRepositorySpy = jest.spyOn(
-          accountRepository,
-          'updateBusinessPartner'
-        );
-        const returnPartner = new BusinessPartner({
-          awsAccountId: '1337',
-          admin: true
-        });
-        accountRepositorySpy.mockImplementation((): Promise<BusinessPartner> => {
-          return Promise.resolve(returnPartner);
-        });
-    
-        const result = await accountService.updateBusinessPartner('1337', true);
-    
-        expect(accountRepositorySpy).toHaveBeenCalledWith('1337', true);
-        expect(result).toBeDefined();
-        expect(result).toEqual(returnPartner);
-      });
+  it('should call accountRepository updateBusinessPartner with admin true and return a partner', async () => {
+    const accountRepositorySpy = jest.spyOn(
+      accountRepository,
+      'updateBusinessPartner'
+    );
+    const returnPartner = new BusinessPartner({
+      awsAccountId: '1337',
+      admin: true,
+    });
+    accountRepositorySpy.mockImplementation((): Promise<BusinessPartner> => {
+      return Promise.resolve(returnPartner);
+    });
 
-      it('should call accountRepository updateBusinessPartner with admin false and return a partner', async () => {
-        const accountRepositorySpy = jest.spyOn(
-          accountRepository,
-          'updateBusinessPartner'
-        );
-        const returnPartner = new BusinessPartner({
-          awsAccountId: '1337',
-          admin: false
-        });
-        accountRepositorySpy.mockImplementation((): Promise<BusinessPartner> => {
-          return Promise.resolve(returnPartner);
-        });
-    
-        const result = await accountService.updateBusinessPartner('1337', false);
-    
-        expect(accountRepositorySpy).toHaveBeenCalledWith('1337', false);
-        expect(result).toBeDefined();
-        expect(result).toEqual(returnPartner);
-      });
-    
-      it('should call accountRepository updateBusinessPartner and return undefined', async () => {
-        const accountRepositorySpy = jest.spyOn(
-          accountRepository,
-          'updateBusinessPartner'
-        );
-        const returnPartner = new BusinessPartner({
-          awsAccountId: '1337',
-        });
-        accountRepositorySpy.mockImplementation((): Promise<undefined> => {
-          return Promise.resolve(undefined);
-        });
-    
-        const result = await accountService.updateBusinessPartner('1337', false);
-    
-        expect(accountRepositorySpy).toHaveBeenCalledWith('1337', false);
-        expect(result).toBeUndefined();
-      });
+    const result = await accountService.updateBusinessPartner('1337', true);
+
+    expect(accountRepositorySpy).toHaveBeenCalledWith('1337', true);
+    expect(result).toBeDefined();
+    expect(result).toEqual(returnPartner);
+  });
+
+  it('should call accountRepository updateBusinessPartner with admin false and return a partner', async () => {
+    const accountRepositorySpy = jest.spyOn(
+      accountRepository,
+      'updateBusinessPartner'
+    );
+    const returnPartner = new BusinessPartner({
+      awsAccountId: '1337',
+      admin: false,
+    });
+    accountRepositorySpy.mockImplementation((): Promise<BusinessPartner> => {
+      return Promise.resolve(returnPartner);
+    });
+
+    const result = await accountService.updateBusinessPartner('1337', false);
+
+    expect(accountRepositorySpy).toHaveBeenCalledWith('1337', false);
+    expect(result).toBeDefined();
+    expect(result).toEqual(returnPartner);
+  });
+
+  it('should call accountRepository updateBusinessPartner and return undefined', async () => {
+    const accountRepositorySpy = jest.spyOn(
+      accountRepository,
+      'updateBusinessPartner'
+    );
+
+    accountRepositorySpy.mockImplementation((): Promise<undefined> => {
+      return Promise.resolve(undefined);
+    });
+
+    const result = await accountService.updateBusinessPartner('1337', false);
+
+    expect(accountRepositorySpy).toHaveBeenCalledWith('1337', false);
+    expect(result).toBeUndefined();
+  });
 });

@@ -55,12 +55,12 @@ export default class AccountRepository {
     };
   }
 
-  /** 
+  /**
    * The TypedORM scan implementation lacks documentation, and I was getting strange behavior from it,
    * so I opted for a hand rolled solution, a recursive scan based on what limit the user provided
    * utilizing the standard aws-sdk dynamodb client.
-   * 
-   **/ 
+   *
+   **/
   public async scanAccounts(
     limit?: number,
     cursor?: string,
@@ -203,8 +203,8 @@ export default class AccountRepository {
 
   /**
    * Transfers account balances between accounts, conditional checks used to insure
-   * proper balance and accounts exist. 
-   * 
+   * proper balance and accounts exist.
+   *
    * Managed by a single transaction with multiple writes to insure proper rollbacks in failure.
    */
   public async transferAccountBalance(
@@ -278,7 +278,7 @@ export default class AccountRepository {
 
   /**
    * Deletes an account / accountType key pair, and updates businessPartner record account count.
-   * 
+   *
    * Uses a transaction to manage sequence of writes, to rollback upon any failures.
    */
   public async deleteAccount(account: Account): Promise<boolean> {

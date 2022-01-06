@@ -82,11 +82,6 @@ describe('getAccountBalance', () => {
 
   it('should recieve a malformed request missing awsAccountId and return 400', async () => {
     const accountServiceSpy = jest.spyOn(accountService, 'getAccount');
-    const mockResult: Account = new Account({
-      awsAccountId: '1337',
-      accountType: 'Checking',
-      balance: 100,
-    });
 
     accountServiceSpy.mockImplementation((): Promise<Account | undefined> => {
       return Promise.resolve(undefined);
@@ -112,11 +107,6 @@ describe('getAccountBalance', () => {
 
   it('should recieve a malformed request missing accountType and return 400', async () => {
     const accountServiceSpy = jest.spyOn(accountService, 'getAccount');
-    const mockResult: Account = new Account({
-      awsAccountId: '1337',
-      accountType: 'Checking',
-      balance: 100,
-    });
 
     accountServiceSpy.mockImplementation((): Promise<Account | undefined> => {
       return Promise.resolve(undefined);
@@ -562,11 +552,6 @@ describe('createAccount', () => {
 
   it('should recieve undefined request and return 400', async () => {
     const accountServiceSpy = jest.spyOn(accountService, 'createAccount');
-    const mockResult: Account = new Account({
-      awsAccountId: '1338',
-      accountType: 'Checking',
-      balance: 100,
-    });
 
     accountServiceSpy.mockImplementation((): Promise<Account> => {
       throw new Error('Testing');
@@ -832,7 +817,9 @@ describe('deleteAccount', () => {
     expect(apiGatewayResult).toBeDefined();
     expect(apiGatewayResult.statusCode).toEqual(400);
     expect(apiGatewayResult.body).toBeDefined();
-    expect(apiGatewayResult.body).toEqual('Attribute accountType not provided.');
+    expect(apiGatewayResult.body).toEqual(
+      'Attribute accountType not provided.'
+    );
   });
 
   it('should recieve malformed request missing accountType and return 400', async () => {
@@ -860,7 +847,9 @@ describe('deleteAccount', () => {
     expect(apiGatewayResult).toBeDefined();
     expect(apiGatewayResult.statusCode).toEqual(400);
     expect(apiGatewayResult.body).toBeDefined();
-    expect(apiGatewayResult.body).toEqual('Attribute accountType not provided.');
+    expect(apiGatewayResult.body).toEqual(
+      'Attribute accountType not provided.'
+    );
   });
 
   it('should not find account return 404', async () => {
@@ -922,8 +911,14 @@ describe('deleteAccount', () => {
 
 describe('updateBusinessPartner', () => {
   it('should update a businessPartner and return 200', async () => {
-    const accountServiceUpdateSpy = jest.spyOn(accountService, 'updateBusinessPartner');
-    const accountServiceGetSpy = jest.spyOn(accountService, 'getBusinessPartner');
+    const accountServiceUpdateSpy = jest.spyOn(
+      accountService,
+      'updateBusinessPartner'
+    );
+    const accountServiceGetSpy = jest.spyOn(
+      accountService,
+      'getBusinessPartner'
+    );
     const mockResult: BusinessPartner = new BusinessPartner({
       awsAccountId: '1337',
       accountCount: 1,
@@ -938,13 +933,13 @@ describe('updateBusinessPartner', () => {
       return Promise.resolve(mockResult);
     });
 
-    const apiGatewayResult: APIGatewayProxyResult = await handler.updateBusinessPartner(
-      {
+    const apiGatewayResult: APIGatewayProxyResult =
+      await handler.updateBusinessPartner({
         pathParameters: {
           awsAccountId: '1337',
         },
         body: JSON.stringify({
-          admin: true
+          admin: true,
         }),
         requestContext: {
           accountId: '1337',
@@ -952,8 +947,7 @@ describe('updateBusinessPartner', () => {
             accountId: '1337',
           },
         },
-      } as unknown as APIGatewayEvent
-    );
+      } as unknown as APIGatewayEvent);
 
     expect(accountServiceGetSpy).toHaveBeenCalledWith('1337');
     expect(accountServiceUpdateSpy).toHaveBeenCalledWith('1337', true);
@@ -964,8 +958,14 @@ describe('updateBusinessPartner', () => {
   });
 
   it('should recieve a malformed request missing caller identity and return 400', async () => {
-    const accountServiceUpdateSpy = jest.spyOn(accountService, 'updateBusinessPartner');
-    const accountServiceGetSpy = jest.spyOn(accountService, 'getBusinessPartner');
+    const accountServiceUpdateSpy = jest.spyOn(
+      accountService,
+      'updateBusinessPartner'
+    );
+    const accountServiceGetSpy = jest.spyOn(
+      accountService,
+      'getBusinessPartner'
+    );
     const mockResult: BusinessPartner = new BusinessPartner({
       awsAccountId: '1337',
       accountCount: 1,
@@ -980,13 +980,13 @@ describe('updateBusinessPartner', () => {
       return Promise.resolve(mockResult);
     });
 
-    const apiGatewayResult: APIGatewayProxyResult = await handler.updateBusinessPartner(
-      {
+    const apiGatewayResult: APIGatewayProxyResult =
+      await handler.updateBusinessPartner({
         pathParameters: {
           awsAccountId: '1337',
         },
         body: JSON.stringify({
-          admin: true
+          admin: true,
         }),
         requestContext: {
           accountId: '1337',
@@ -994,20 +994,27 @@ describe('updateBusinessPartner', () => {
             accountId: '',
           },
         },
-      } as unknown as APIGatewayEvent
-    );
+      } as unknown as APIGatewayEvent);
 
     expect(accountServiceGetSpy).not.toHaveBeenCalled();
     expect(accountServiceUpdateSpy).not.toHaveBeenCalled();
     expect(apiGatewayResult).toBeDefined();
     expect(apiGatewayResult.statusCode).toEqual(400);
     expect(apiGatewayResult.body).toBeDefined();
-    expect(apiGatewayResult.body).toEqual('Missing/improper body containing admin boolean flag');
+    expect(apiGatewayResult.body).toEqual(
+      'Missing/improper body containing admin boolean flag'
+    );
   });
 
   it('should recieve a malformed request missing awsAccountId pathParameter and return 400', async () => {
-    const accountServiceUpdateSpy = jest.spyOn(accountService, 'updateBusinessPartner');
-    const accountServiceGetSpy = jest.spyOn(accountService, 'getBusinessPartner');
+    const accountServiceUpdateSpy = jest.spyOn(
+      accountService,
+      'updateBusinessPartner'
+    );
+    const accountServiceGetSpy = jest.spyOn(
+      accountService,
+      'getBusinessPartner'
+    );
     const mockResult: BusinessPartner = new BusinessPartner({
       awsAccountId: '1337',
       accountCount: 1,
@@ -1022,13 +1029,13 @@ describe('updateBusinessPartner', () => {
       return Promise.resolve(mockResult);
     });
 
-    const apiGatewayResult: APIGatewayProxyResult = await handler.updateBusinessPartner(
-      {
+    const apiGatewayResult: APIGatewayProxyResult =
+      await handler.updateBusinessPartner({
         pathParameters: {
           awsAccountId: '',
         },
         body: JSON.stringify({
-          admin: true
+          admin: true,
         }),
         requestContext: {
           accountId: '1337',
@@ -1036,20 +1043,27 @@ describe('updateBusinessPartner', () => {
             accountId: '1337',
           },
         },
-      } as unknown as APIGatewayEvent
-    );
+      } as unknown as APIGatewayEvent);
 
     expect(accountServiceGetSpy).not.toHaveBeenCalled();
     expect(accountServiceUpdateSpy).not.toHaveBeenCalled();
     expect(apiGatewayResult).toBeDefined();
     expect(apiGatewayResult.statusCode).toEqual(400);
     expect(apiGatewayResult.body).toBeDefined();
-    expect(apiGatewayResult.body).toEqual('Missing/improper body containing admin boolean flag');
+    expect(apiGatewayResult.body).toEqual(
+      'Missing/improper body containing admin boolean flag'
+    );
   });
 
   it('should recieve a malformed request missing body and return 400', async () => {
-    const accountServiceUpdateSpy = jest.spyOn(accountService, 'updateBusinessPartner');
-    const accountServiceGetSpy = jest.spyOn(accountService, 'getBusinessPartner');
+    const accountServiceUpdateSpy = jest.spyOn(
+      accountService,
+      'updateBusinessPartner'
+    );
+    const accountServiceGetSpy = jest.spyOn(
+      accountService,
+      'getBusinessPartner'
+    );
     const mockResult: BusinessPartner = new BusinessPartner({
       awsAccountId: '1337',
       accountCount: 1,
@@ -1064,8 +1078,8 @@ describe('updateBusinessPartner', () => {
       return Promise.resolve(mockResult);
     });
 
-    const apiGatewayResult: APIGatewayProxyResult = await handler.updateBusinessPartner(
-      {
+    const apiGatewayResult: APIGatewayProxyResult =
+      await handler.updateBusinessPartner({
         pathParameters: {
           awsAccountId: '',
         },
@@ -1076,20 +1090,27 @@ describe('updateBusinessPartner', () => {
             accountId: '1337',
           },
         },
-      } as unknown as APIGatewayEvent
-    );
+      } as unknown as APIGatewayEvent);
 
     expect(accountServiceGetSpy).not.toHaveBeenCalled();
     expect(accountServiceUpdateSpy).not.toHaveBeenCalled();
     expect(apiGatewayResult).toBeDefined();
     expect(apiGatewayResult.statusCode).toEqual(400);
     expect(apiGatewayResult.body).toBeDefined();
-    expect(apiGatewayResult.body).toEqual('Missing/improper body containing admin boolean flag');
+    expect(apiGatewayResult.body).toEqual(
+      'Missing/improper body containing admin boolean flag'
+    );
   });
 
   it('should recieve a malformed request improper body and return 400', async () => {
-    const accountServiceUpdateSpy = jest.spyOn(accountService, 'updateBusinessPartner');
-    const accountServiceGetSpy = jest.spyOn(accountService, 'getBusinessPartner');
+    const accountServiceUpdateSpy = jest.spyOn(
+      accountService,
+      'updateBusinessPartner'
+    );
+    const accountServiceGetSpy = jest.spyOn(
+      accountService,
+      'getBusinessPartner'
+    );
     const mockResult: BusinessPartner = new BusinessPartner({
       awsAccountId: '1337',
       accountCount: 1,
@@ -1104,13 +1125,13 @@ describe('updateBusinessPartner', () => {
       return Promise.resolve(mockResult);
     });
 
-    const apiGatewayResult: APIGatewayProxyResult = await handler.updateBusinessPartner(
-      {
+    const apiGatewayResult: APIGatewayProxyResult =
+      await handler.updateBusinessPartner({
         pathParameters: {
           awsAccountId: '1337',
         },
         body: JSON.stringify({
-          admin: 'true'
+          admin: 'true',
         }),
         requestContext: {
           accountId: '1337',
@@ -1118,20 +1139,27 @@ describe('updateBusinessPartner', () => {
             accountId: '1337',
           },
         },
-      } as unknown as APIGatewayEvent
-    );
+      } as unknown as APIGatewayEvent);
 
     expect(accountServiceGetSpy).not.toHaveBeenCalled();
     expect(accountServiceUpdateSpy).not.toHaveBeenCalled();
     expect(apiGatewayResult).toBeDefined();
     expect(apiGatewayResult.statusCode).toEqual(400);
     expect(apiGatewayResult.body).toBeDefined();
-    expect(apiGatewayResult.body).toEqual('Missing/improper body containing admin boolean flag');
+    expect(apiGatewayResult.body).toEqual(
+      'Missing/improper body containing admin boolean flag'
+    );
   });
 
   it('should handle errors and return 400', async () => {
-    const accountServiceUpdateSpy = jest.spyOn(accountService, 'updateBusinessPartner');
-    const accountServiceGetSpy = jest.spyOn(accountService, 'getBusinessPartner');
+    const accountServiceUpdateSpy = jest.spyOn(
+      accountService,
+      'updateBusinessPartner'
+    );
+    const accountServiceGetSpy = jest.spyOn(
+      accountService,
+      'getBusinessPartner'
+    );
     const mockResult: BusinessPartner = new BusinessPartner({
       awsAccountId: '1337',
       accountCount: 1,
@@ -1146,13 +1174,13 @@ describe('updateBusinessPartner', () => {
       return Promise.resolve(mockResult);
     });
 
-    const apiGatewayResult: APIGatewayProxyResult = await handler.updateBusinessPartner(
-      {
+    const apiGatewayResult: APIGatewayProxyResult =
+      await handler.updateBusinessPartner({
         pathParameters: {
           awsAccountId: '1338',
         },
         body: JSON.stringify({
-          admin: true
+          admin: true,
         }),
         requestContext: {
           accountId: '1337',
@@ -1160,8 +1188,7 @@ describe('updateBusinessPartner', () => {
             accountId: '1338',
           },
         },
-      } as unknown as APIGatewayEvent
-    );
+      } as unknown as APIGatewayEvent);
 
     expect(accountServiceGetSpy).toHaveBeenCalledWith('1338');
     expect(accountServiceUpdateSpy).not.toHaveBeenCalled();
@@ -1172,8 +1199,14 @@ describe('updateBusinessPartner', () => {
   });
 
   it('should handle improper access and return 400', async () => {
-    const accountServiceUpdateSpy = jest.spyOn(accountService, 'updateBusinessPartner');
-    const accountServiceGetSpy = jest.spyOn(accountService, 'getBusinessPartner');
+    const accountServiceUpdateSpy = jest.spyOn(
+      accountService,
+      'updateBusinessPartner'
+    );
+    const accountServiceGetSpy = jest.spyOn(
+      accountService,
+      'getBusinessPartner'
+    );
     const mockResult: BusinessPartner = new BusinessPartner({
       awsAccountId: '1337',
       accountCount: 1,
@@ -1188,13 +1221,13 @@ describe('updateBusinessPartner', () => {
       return Promise.resolve(mockResult);
     });
 
-    const apiGatewayResult: APIGatewayProxyResult = await handler.updateBusinessPartner(
-      {
+    const apiGatewayResult: APIGatewayProxyResult =
+      await handler.updateBusinessPartner({
         pathParameters: {
           awsAccountId: '1338',
         },
         body: JSON.stringify({
-          admin: true
+          admin: true,
         }),
         requestContext: {
           accountId: '1337',
@@ -1202,8 +1235,7 @@ describe('updateBusinessPartner', () => {
             accountId: '1338',
           },
         },
-      } as unknown as APIGatewayEvent
-    );
+      } as unknown as APIGatewayEvent);
 
     expect(accountServiceGetSpy).toHaveBeenCalledWith('1338');
     expect(accountServiceUpdateSpy).toHaveBeenCalledWith('1338', true);

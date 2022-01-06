@@ -193,8 +193,8 @@ describe('scanAccounts', () => {
     } as unknown as DocumentClient;
 
     const returnAccount: Account = new Account({
-        awsAccountId: '1337',
-        accountType: 'Checking'
+      awsAccountId: '1337',
+      accountType: 'Checking',
     });
 
     const dynamodbClientSpy = jest
@@ -209,166 +209,168 @@ describe('scanAccounts', () => {
         },
       } as unknown as Request<ScanOutput, AWSError>);
 
-      const accountRepository: AccountRepository = new AccountRepository(
-        {} as EntityManager,
-        {} as TransactionManager,
-        dynamodbClient
-      );
+    const accountRepository: AccountRepository = new AccountRepository(
+      {} as EntityManager,
+      {} as TransactionManager,
+      dynamodbClient
+    );
 
-      const result = await accountRepository.scanAccounts();
+    const result = await accountRepository.scanAccounts();
 
-      expect(dynamodbClientSpy).toHaveBeenCalledTimes(1);
-      expect(dynamodbClientSpy).toHaveBeenCalledWith({
-        TableName: 'DynamoDB Table not defined.',
-        FilterExpression: '#en = :en',
-        ExpressionAttributeNames: {
-          '#en': '__en',
-          '#at': 'accountType',
-          '#aa': 'awsAccountId',
-        },
-        ExpressionAttributeValues: {
-          ':en': Account.ENTITY_NAME,
-        },
-        ProjectionExpression: '#at, #aa',
-        Limit: undefined,
-        ExclusiveStartKey: accountRepository.decodeCursor(''),
-      });
-      expect(result).toBeDefined();
-      expect(result.count).toEqual(1);
-      expect(result.items?.[0]).toEqual(returnAccount);
-      expect(result.cursor).toBeUndefined();
+    expect(dynamodbClientSpy).toHaveBeenCalledTimes(1);
+    expect(dynamodbClientSpy).toHaveBeenCalledWith({
+      TableName: 'DynamoDB Table not defined.',
+      FilterExpression: '#en = :en',
+      ExpressionAttributeNames: {
+        '#en': '__en',
+        '#at': 'accountType',
+        '#aa': 'awsAccountId',
+      },
+      ExpressionAttributeValues: {
+        ':en': Account.ENTITY_NAME,
+      },
+      ProjectionExpression: '#at, #aa',
+      Limit: undefined,
+      ExclusiveStartKey: accountRepository.decodeCursor(''),
+    });
+    expect(result).toBeDefined();
+    expect(result.count).toEqual(1);
+    expect(result.items?.[0]).toEqual(returnAccount);
+    expect(result.cursor).toBeUndefined();
   });
 
   it('should call dynamodbClient scan, recurse until limit is met, and return an entityList', async () => {
     const dynamodbClient: DocumentClient = {
-        scan: jest.fn(),
-      } as unknown as DocumentClient;
-  
-      const returnAccount: Account = new Account({
-          awsAccountId: '1337',
-          accountType: 'Checking'
-      });
-  
-      const dynamodbClientSpy = jest
-        .spyOn(dynamodbClient, 'scan')
-        .mockReturnValueOnce({
-          promise: () => {
-            return Promise.resolve({
-              Items: [returnAccount],
-              Count: 1,
-              LastEvaluatedKey: '123',
-            });
-          },
-        } as unknown as Request<ScanOutput, AWSError>)
-        .mockReturnValueOnce({
-            promise: () => {
-              return Promise.resolve({
-                Items: [returnAccount],
-                Count: 1,
-                LastEvaluatedKey: { pk: '123'},
-              });
-            },
-          } as unknown as Request<ScanOutput, AWSError>);
-  
-        const accountRepository: AccountRepository = new AccountRepository(
-          {} as EntityManager,
-          {} as TransactionManager,
-          dynamodbClient
-        );
-  
-        const result = await accountRepository.scanAccounts(2);
-  
-        expect(dynamodbClientSpy).toHaveBeenCalledTimes(2);
-        expect(result).toBeDefined();
-        expect(result.count).toEqual(2);
-        expect(result.items?.[0]).toEqual(returnAccount);
-        expect(result.cursor).toEqual(accountRepository.encodeCursor({ pk: '123'}));
+      scan: jest.fn(),
+    } as unknown as DocumentClient;
+
+    const returnAccount: Account = new Account({
+      awsAccountId: '1337',
+      accountType: 'Checking',
+    });
+
+    const dynamodbClientSpy = jest
+      .spyOn(dynamodbClient, 'scan')
+      .mockReturnValueOnce({
+        promise: () => {
+          return Promise.resolve({
+            Items: [returnAccount],
+            Count: 1,
+            LastEvaluatedKey: '123',
+          });
+        },
+      } as unknown as Request<ScanOutput, AWSError>)
+      .mockReturnValueOnce({
+        promise: () => {
+          return Promise.resolve({
+            Items: [returnAccount],
+            Count: 1,
+            LastEvaluatedKey: { pk: '123' },
+          });
+        },
+      } as unknown as Request<ScanOutput, AWSError>);
+
+    const accountRepository: AccountRepository = new AccountRepository(
+      {} as EntityManager,
+      {} as TransactionManager,
+      dynamodbClient
+    );
+
+    const result = await accountRepository.scanAccounts(2);
+
+    expect(dynamodbClientSpy).toHaveBeenCalledTimes(2);
+    expect(result).toBeDefined();
+    expect(result.count).toEqual(2);
+    expect(result.items?.[0]).toEqual(returnAccount);
+    expect(result.cursor).toEqual(
+      accountRepository.encodeCursor({ pk: '123' })
+    );
   });
 
   it('should call dynamodbClient scan, recurse until no more cursors are returned, and return an entityList', async () => {
     const dynamodbClient: DocumentClient = {
-        scan: jest.fn(),
-      } as unknown as DocumentClient;
-  
-      const returnAccount: Account = new Account({
-          awsAccountId: '1337',
-          accountType: 'Checking'
-      });
-  
-      const dynamodbClientSpy = jest
-        .spyOn(dynamodbClient, 'scan')
-        .mockReturnValueOnce({
-          promise: () => {
-            return Promise.resolve({
-              Items: [returnAccount],
-              Count: 1,
-              LastEvaluatedKey: '123',
-            });
-          },
-        } as unknown as Request<ScanOutput, AWSError>)
-        .mockReturnValueOnce({
-            promise: () => {
-              return Promise.resolve({
-                Items: [returnAccount],
-                Count: 1,
-                LastEvaluatedKey: { pk: '1234'},
-              });
-            },
-          } as unknown as Request<ScanOutput, AWSError>)
-          .mockReturnValueOnce({
-            promise: () => {
-              return Promise.resolve({
-                Items: [returnAccount],
-                Count: 1,
-                LastEvaluatedKey: undefined,
-              });
-            },
-          } as unknown as Request<ScanOutput, AWSError>);
-  
-        const accountRepository: AccountRepository = new AccountRepository(
-          {} as EntityManager,
-          {} as TransactionManager,
-          dynamodbClient
-        );
-  
-        const result = await accountRepository.scanAccounts(3);
-  
-        expect(dynamodbClientSpy).toHaveBeenCalledTimes(3);
-        expect(result).toBeDefined();
-        expect(result.count).toEqual(3);
-        expect(result.items?.[0]).toEqual(returnAccount);
-        expect(result.cursor).toBeUndefined();
+      scan: jest.fn(),
+    } as unknown as DocumentClient;
+
+    const returnAccount: Account = new Account({
+      awsAccountId: '1337',
+      accountType: 'Checking',
+    });
+
+    const dynamodbClientSpy = jest
+      .spyOn(dynamodbClient, 'scan')
+      .mockReturnValueOnce({
+        promise: () => {
+          return Promise.resolve({
+            Items: [returnAccount],
+            Count: 1,
+            LastEvaluatedKey: '123',
+          });
+        },
+      } as unknown as Request<ScanOutput, AWSError>)
+      .mockReturnValueOnce({
+        promise: () => {
+          return Promise.resolve({
+            Items: [returnAccount],
+            Count: 1,
+            LastEvaluatedKey: { pk: '1234' },
+          });
+        },
+      } as unknown as Request<ScanOutput, AWSError>)
+      .mockReturnValueOnce({
+        promise: () => {
+          return Promise.resolve({
+            Items: [returnAccount],
+            Count: 1,
+            LastEvaluatedKey: undefined,
+          });
+        },
+      } as unknown as Request<ScanOutput, AWSError>);
+
+    const accountRepository: AccountRepository = new AccountRepository(
+      {} as EntityManager,
+      {} as TransactionManager,
+      dynamodbClient
+    );
+
+    const result = await accountRepository.scanAccounts(3);
+
+    expect(dynamodbClientSpy).toHaveBeenCalledTimes(3);
+    expect(result).toBeDefined();
+    expect(result.count).toEqual(3);
+    expect(result.items?.[0]).toEqual(returnAccount);
+    expect(result.cursor).toBeUndefined();
   });
 
-  it('should call dynamodbClient scan with limit and return an entityList', async () => {});
+  //   it('should call dynamodbClient scan with limit and return an entityList', async () => {});
 
-  it('should call dynamodbClient scan with cursor and return an entityList', async () => {});
+  //   it('should call dynamodbClient scan with cursor and return an entityList', async () => {});
 
-  it('should call dynamodbClient scan with limit and cursor and return an entityList', async () => {});
+  //   it('should call dynamodbClient scan with limit and cursor and return an entityList', async () => {});
 
-  it('should call dynamodbClient scan and return an empty entityList', async () => {});
+  //   it('should call dynamodbClient scan and return an empty entityList', async () => {});
 });
 
-describe('getAccount', () => {
-  it('should call entityManager findOne and return an Account', async () => {});
+// describe('getAccount', () => {
+//   it('should call entityManager findOne and return an Account', async () => {});
 
-  it('should call entityManager findOne and return undefined', async () => {});
-});
+//   it('should call entityManager findOne and return undefined', async () => {});
+// });
 
-describe('getBusinessPartner', () => {
-  it('should call entityManager findOne and return a BusinessPartner', async () => {});
+// describe('getBusinessPartner', () => {
+//   it('should call entityManager findOne and return a BusinessPartner', async () => {});
 
-  it('should call entityManager findOne and return undefined', async () => {});
-});
+//   it('should call entityManager findOne and return undefined', async () => {});
+// });
 
-describe('createAccount', () => {});
+// describe('createAccount', () => {});
 
-describe('transferAccountBalance', () => {});
+// describe('transferAccountBalance', () => {});
 
-describe('deleteAccount', () => {});
+// describe('deleteAccount', () => {});
 
-describe('updateBusinessPartner', () => {});
+// describe('updateBusinessPartner', () => {});
 
-describe('decodeCursor', () => {});
+// describe('decodeCursor', () => {});
 
-describe('encodeCursor', () => {});
+// describe('encodeCursor', () => {});
