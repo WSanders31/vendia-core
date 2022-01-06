@@ -6,7 +6,7 @@ import {
 import EntityList from './EntityList';
 import Account from './Account';
 import BusinessPartner from './BusinessPartner';
-import AWS from 'aws-sdk';
+import * as AWS from 'aws-sdk';
 import { DocumentClient } from 'aws-sdk/clients/dynamodb';
 import { TransactionCancelledException } from '@typedorm/common';
 
@@ -194,7 +194,7 @@ export default class AccountRepository {
         throw new Error('Something went wrong');
       }
     }
-    
+
     return this.entityManager.findOne(Account, {
       awsAccountId: account.awsAccountId,
       accountType: account.accountType,
