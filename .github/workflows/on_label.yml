@@ -1,6 +1,9 @@
 
 name: Adds all issues that don't include the 'bug' or 'needs-triage' labels to project board
 
+permissions:
+  repository-projects: write
+
 on:
   issues:
     types:
