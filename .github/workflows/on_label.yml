@@ -13,6 +13,6 @@ jobs:
     steps:
       - uses: actions/add-to-project@v0.3.0
         with:
-          project-url: https://github.com/users/WSanders31/projects/1/views/1
+          project-url: https://github.com/users/WSanders31/projects/1
           github-token: ${{ secrets.GITHUB_TOKEN }}
           labeled: bug
